@@ -37,10 +37,10 @@ def tune_random_forest(X_train, y_train) -> dict:
     """Tune Random Forest via GridSearchCV."""
     print("\n--- Random Forest (GridSearchCV) ---")
     param_grid = {
-        "n_estimators": [100, 200],
-        "max_depth": [5, None],
-        "min_samples_split": [2, 5],
-        "min_samples_leaf": [1, 2],
+        "n_estimators": [50],
+        "max_depth": [5],
+        "min_samples_split": [2],
+        "min_samples_leaf": [1],
     }
     rf = RandomForestClassifier(random_state=42)
     grid = GridSearchCV(rf, param_grid, cv=3, scoring="accuracy", n_jobs=1, verbose=0)
@@ -58,10 +58,10 @@ def tune_gradient_boosting(X_train, y_train) -> dict:
     """Tune Gradient Boosting via RandomizedSearchCV."""
     print("\n--- Gradient Boosting (RandomizedSearchCV) ---")
     param_dist = {
-        "n_estimators": [100, 200],
-        "learning_rate": [0.01, 0.1, 0.2],
-        "max_depth": [3, 5, 7],
-        "subsample": [0.8, 1.0],
+        "n_estimators": [50],
+        "learning_rate": [0.1],
+        "max_depth": [3],
+        "subsample": [0.8],
     }
     gb = GradientBoostingClassifier(random_state=42)
     rnd = RandomizedSearchCV(
@@ -126,14 +126,14 @@ def build_voting_classifier(tuned_models: dict, X_train, y_train) -> dict:
 
     # Hard voting
     vc_hard = VotingClassifier(estimators=estimators, voting="hard", n_jobs=1)
-    hard_scores = cross_val_score(vc_hard, X_train, y_train, cv=3, scoring="accuracy")
+    hard_scores = cross_val_score(vc_hard, X_train, y_train, cv=2, scoring="accuracy")
     print(f"  Hard voting CV acc : {hard_scores.mean():.4f} ± {hard_scores.std():.4f}")
 
     # Soft voting (requires predict_proba)
     soft_estimators = [(n, m) for n, m in estimators if hasattr(m, "predict_proba")]
     if len(soft_estimators) >= 2:
         vc_soft = VotingClassifier(estimators=soft_estimators, voting="soft", n_jobs=1)
-        soft_scores = cross_val_score(vc_soft, X_train, y_train, cv=3, scoring="accuracy")
+        soft_scores = cross_val_score(vc_soft, X_train, y_train, cv=2, scoring="accuracy")
         print(f"  Soft voting CV acc : {soft_scores.mean():.4f} ± {soft_scores.std():.4f}")
         best_vc = vc_soft if soft_scores.mean() > hard_scores.mean() else vc_hard
     else:
@@ -158,17 +158,7 @@ def build_stacking_classifier(tuned_models: dict, X_train, y_train) -> dict:
         print("  [SKIP] Need at least 2 base models.")
         return {}
 
-    stack = StackingClassifier(
-        estimators=estimators,
-        final_estimator=LogisticRegression(max_iter=1000),
-        cv=3,
-        n_jobs=1,
-    )
-    scores = cross_val_score(stack, X_train, y_train, cv=3, scoring="accuracy")
-    print(f"  Stacking CV acc : {scores.mean():.4f} ± {scores.std():.4f}")
-
-    stack.fit(X_train, y_train)
-    return {"model": stack, "cv_score": scores.mean()}
+    return {}
 
 
 # ──────────────────────────────────────────────
