@@ -336,24 +336,35 @@ async function runPipeline() {
       loadingText.textContent = s.message || 'Processing...';
       loadingSub.textContent = `Step ${s.step} of ${s.total}`;
       updatePipelineFlow(s.step);
+
+      // Check if finished
+      if (s.running === false && s.message !== "Starting...") {
+        clearInterval(pollId);
+        overlay.classList.remove('visible');
+        btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+
+        if (s.message === "Complete!") {
+          updatePipelineFlow(5);
+          if (heroStatus) heroStatus.textContent = 'COMPLETE';
+          showToast('Pipeline completed successfully! 🎉', 'success');
+          loadModelResults();
+        } else {
+          if (heroStatus) heroStatus.textContent = 'ERROR';
+          showToast(`Pipeline failed: ${s.message}`, 'error');
+        }
+      }
     } catch (e) {}
   }, 1000);
 
   try {
     const res = await fetch(`${API}/api/run-pipeline`, { method: 'POST' });
     const result = await res.json();
-    clearInterval(pollId);
-    overlay.classList.remove('visible');
-    btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-
-    if (result.status === 'success') {
-      updatePipelineFlow(5);
-      if (heroStatus) heroStatus.textContent = 'COMPLETE';
-      showToast('Pipeline completed successfully! 🎉', 'success');
-      loadModelResults();
-    } else {
+    if (result.status === "error") {
+      clearInterval(pollId);
+      overlay.classList.remove('visible');
+      btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
       if (heroStatus) heroStatus.textContent = 'ERROR';
-      showToast(`Pipeline failed: ${result.error}`, 'error');
+      showToast(`Error: ${result.error}`, 'error');
     }
   } catch (err) {
     clearInterval(pollId);

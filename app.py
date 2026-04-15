@@ -139,11 +139,10 @@ def eda_data():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/run-pipeline", methods=["POST"])
-def run_pipeline():
-    """Run the full ML pipeline and return results."""
+import threading
+
+def pipeline_worker():
     global pipeline_artifacts, pipeline_status
-    import time
     try:
         pipeline_status = {"step": 0, "total": 5, "message": "Starting...", "running": True}
         results = {}
@@ -191,12 +190,21 @@ def run_pipeline():
         results["best_model"] = pipeline_artifacts.get("best_name", "N/A")
         results["comparison"] = pipeline_artifacts["comparison"].to_dict(orient="records") if "comparison" in pipeline_artifacts else []
 
-        pipeline_status = {"step": 5, "total": 5, "message": "Complete!", "running": False}
-        return jsonify({"status": "success", "results": results})
+        pipeline_status = {"step": 5, "total": 5, "message": "Complete!", "running": False, "results": results}
 
     except Exception as e:
         pipeline_status = {"step": 0, "total": 5, "message": f"Error: {str(e)}", "running": False}
-        return jsonify({"status": "error", "error": str(e)}), 500
+
+@app.route("/api/run-pipeline", methods=["POST"])
+def run_pipeline():
+    """Run the full ML pipeline in the background and return 202."""
+    if pipeline_status["running"]:
+        return jsonify({"status": "already_running"}), 400
+    
+    thread = threading.Thread(target=pipeline_worker)
+    thread.daemon = True
+    thread.start()
+    return jsonify({"status": "started"}), 202
 
 
 @app.route("/api/pipeline-status")
