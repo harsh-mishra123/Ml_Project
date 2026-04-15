@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# OS Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Generated Model Artifacts and Plots
+*.png
+*.jpg
+saved_models/*.pkl
+!saved_models/.gitkeep
+
+# IDEs
+.idea/
+.vscode/
+*.swp

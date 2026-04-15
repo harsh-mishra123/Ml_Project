@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>HealthRisk AI — Precision Clinical Intelligence</title>
+  <meta name="description" content="HealthRisk AI — Multi-stage ML pipeline for early disease prediction. Deploy precision intelligence directly into clinical workflows." />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "#0d1517",
+            "on-secondary": "#00382e",
+            "surface-dim": "#0d1517",
+            "on-error-container": "#ffdad6",
+            "on-secondary-fixed": "#00201a",
+            "inverse-on-surface": "#2a3234",
+            "secondary-container": "#00c1a3",
+            "surface-container-low": "#151d1f",
+            "on-secondary-container": "#00483c",
+            "on-primary": "#003544",
+            outline: "#8a9296",
+            "on-surface": "#dce4e6",
+            "primary-container": "#004253",
+            "surface-variant": "#2e3638",
+            "tertiary-fixed-dim": "#afc6ff",
+            "surface-tint": "#9bcee3",
+            "on-error": "#690005",
+            "surface-container-highest": "#2e3638",
+            "outline-variant": "#40484b",
+            "on-background": "#dce4e6",
+            "surface-container-lowest": "#080f11",
+            error: "#ffb4ab",
+            "inverse-surface": "#dce4e6",
+            "on-secondary-fixed-variant": "#005143",
+            "surface-container-high": "#232b2d",
+            surface: "#0d1517",
+            "on-tertiary-fixed-variant": "#004299",
+            "on-tertiary-container": "#7ba5ff",
+            secondary: "#40ddbe",
+            tertiary: "#afc6ff",
+            "secondary-fixed-dim": "#40ddbe",
+            "tertiary-fixed": "#d9e2ff",
+            "primary-fixed": "#b8eaff",
+            primary: "#9bcee3",
+            "on-tertiary": "#002d6d",
+            "error-container": "#93000a",
+            "on-primary-fixed": "#001f28",
+            "surface-bright": "#323b3d",
+            "on-surface-variant": "#c0c8cc",
+            "secondary-fixed": "#64fada",
+            "surface-container": "#192123",
+            "tertiary-container": "#003883",
+            "on-primary-fixed-variant": "#134d5e",
+            "inverse-primary": "#316577",
+            "primary-fixed-dim": "#9bcee3",
+            "on-tertiary-fixed": "#001944",
+            "on-primary-container": "#7caec2",
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px",
+          },
+          fontFamily: {
+            headline: ["Manrope"],
+            body: ["Manrope"],
+            label: ["Manrope"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    body { font-family: 'Manrope', sans-serif; background-color: #0d1517; }
+    .glass-panel { background: rgba(35, 43, 45, 0.6); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); }
+    .ghost-border { border: 1px solid rgba(64, 72, 75, 0.15); }
+    .text-glow { text-shadow: 0 0 15px rgba(64, 221, 190, 0.4); }
+    .gradient-text { background: linear-gradient(to right, #40ddbe, #9bcee3); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .glow-path { filter: drop-shadow(0 0 8px #40ddbe); }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(64, 221, 190, 0.3); }
+      50% { box-shadow: 0 0 35px rgba(64, 221, 190, 0.6); }
+    }
+    @keyframes spin20 { to { transform: rotate(360deg); } }
+    .animate-fade-in-up { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-100 { animation-delay: 100ms; }
+    .delay-200 { animation-delay: 200ms; }
+    .delay-300 { animation-delay: 300ms; }
+    .delay-400 { animation-delay: 400ms; }
+    .delay-500 { animation-delay: 500ms; }
+    .delay-600 { animation-delay: 600ms; }
+    .pulse-glow-hover:hover { animation: pulseGlow 2s infinite ease-in-out; }
+
+    /* Dashboard-specific */
+    .chart-box canvas { width: 100% !important; height: 100% !important; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #0d1517; }
+    ::-webkit-scrollbar-thumb { background: #40ddbe44; border-radius: 10px; }
+
+    .dash-card { background: rgba(25, 33, 35, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(64, 72, 75, 0.2); transition: all 0.3s ease; }
+    .dash-card:hover { border-color: rgba(64, 221, 190, 0.2); box-shadow: 0 0 30px rgba(64, 221, 190, 0.06); }
+
+    .risk-tag { padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .risk-tag.low { background: rgba(64, 221, 190, 0.15); color: #40ddbe; }
+    .risk-tag.medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .risk-tag.high { background: rgba(255, 180, 171, 0.15); color: #ffb4ab; }
+
+    .accuracy-track { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
+    .accuracy-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #40ddbe, #9bcee3); transition: width 1s ease; }
+
+    .prob-track { flex: 1; height: 10px; border-radius: 5px; background: rgba(255,255,255,0.05); overflow: hidden; }
+    .prob-fill { height: 100%; border-radius: 5px; transition: width 0.8s ease; }
+    .prob-fill.low { background: #40ddbe; }
+    .prob-fill.medium { background: #f59e0b; }
+    .prob-fill.high { background: #ffb4ab; }
+
+    /* Loading overlay */
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(13,21,23,0.88); backdrop-filter: blur(8px); z-index: 200; justify-content: center; align-items: center; }
+    .loading-overlay.visible { display: flex; }
+    .loading-spinner { width: 48px; height: 48px; border: 3px solid rgba(64,72,75,0.3); border-top-color: #40ddbe; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast-box { position: fixed; bottom: 2rem; right: 2rem; padding: 14px 24px; border-radius: 12px; background: rgba(25,33,35,0.9); border: 1px solid rgba(64,72,75,0.2); color: #dce4e6; font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(10px); box-shadow: 0 8px 40px rgba(0,0,0,0.5); transform: translateY(120%); transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1); z-index: 300; display: flex; align-items: center; gap: 10px; }
+    .toast-box.visible { transform: translateY(0); }
+    .toast-box.error { border-color: rgba(255,180,171,0.3); }
+
+    /* Data table */
+    .data-tbl { width: 100%; border-collapse: collapse; font-size: 0.78rem; font-family: 'JetBrains Mono', monospace; }
+    .data-tbl thead th { position: sticky; top: 0; background: #192123; color: #40ddbe; font-weight: 600; padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(64,72,75,0.2); white-space: nowrap; z-index: 5; }
+    .data-tbl tbody td { padding: 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); white-space: nowrap; }
+    .data-tbl tbody tr:hover td { background: rgba(64,221,190,0.03); }
+
+    /* Tab styling override */
+    .tab-btn-dash { padding: 8px 20px; border-radius: 9999px; border: none; font-family: 'Manrope'; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .tab-btn-dash.active { background: linear-gradient(135deg, #40ddbe, #9bcee3); color: #003544; }
+    .tab-btn-dash:not(.active) { background: transparent; color: #8a9296; }
+    .tab-btn-dash:not(.active):hover { color: #dce4e6; background: rgba(255,255,255,0.04); }
+
+    .tab-content-dash { display: none; }
+    .tab-content-dash.active { display: block; animation: fadeInUp 0.4s ease; }
+
+    /* Pipeline */
+    .pipeline-dot { width: 52px; height: 52px; border-radius: 50%; background: #192123; border: 2px solid rgba(64,72,75,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; transition: all 0.4s; position: relative; z-index: 2; }
+    .pipeline-step.completed .pipeline-dot { background: linear-gradient(135deg, #40ddbe, #9bcee3); border-color: #40ddbe; box-shadow: 0 0 20px rgba(64,221,190,0.3); color: #003544; }
+    .pipeline-step.active .pipeline-dot { border-color: #f59e0b; box-shadow: 0 0 20px rgba(245,158,11,0.3); animation: pulseGlow 1.5s infinite; }
+    .pipeline-connector { width: 60px; height: 2px; background: rgba(64,72,75,0.2); margin-bottom: 1.75rem; transition: all 0.4s; }
+    .pipeline-connector.completed { background: linear-gradient(90deg, #40ddbe, #9bcee3); box-shadow: 0 0 8px rgba(64,221,190,0.3); }
+
+    /* Form */
+    .form-input { padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(64,72,75,0.5); background-color: rgba(0,0,0,0.25) !important; color: #ffffff !important; font-family: 'Manrope'; font-size: 0.9rem; transition: all 0.2s; outline: none; width: 100%; }
+    .form-input:focus { border-color: #40ddbe !important; box-shadow: 0 0 0 3px rgba(64,221,190,0.12) !important; outline: none !important; }
+    .form-input::placeholder { color: #8a9296 !important; }
+
+    .section-reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .section-reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+
+<body class="text-on-surface overflow-x-hidden">
+
+<!-- ═══════════════════════════════════════════════════
+     NAVBAR
+     ═══════════════════════════════════════════════════ -->
+<nav class="fixed top-0 w-full z-50 bg-teal-950/60 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,66,83,0.1)]">
+  <div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+    <div class="flex items-center gap-2">
+      <span class="material-symbols-outlined text-teal-400 text-2xl">clinical_notes</span>
+      <span class="text-teal-50 text-2xl font-black tracking-tighter">HealthRisk AI</span>
+    </div>
+    <div class="hidden md:flex items-center gap-1">
+      <a href="#overview" class="text-sm font-medium text-on-surface-variant hover:text-on-surface px-3 py-2 rounded-full transition-colors">Data</a>
+      <a href="#eda" class="text-sm font-medium text-on-surface-variant hover:text-on-surface px-3 py-2 rounded-full transition-colors">Analysis</a>
+      <a href="#pipeline" class="text-sm font-medium text-on-surface-variant hover:text-on-surface px-3 py-2 rounded-full transition-colors">Pipeline</a>
+      <a href="#models" class="text-sm font-medium text-on-surface-variant hover:text-on-surface px-3 py-2 rounded-full transition-colors">Models</a>
+      <a href="#predict" class="text-sm font-medium text-on-surface-variant hover:text-on-surface px-3 py-2 rounded-full transition-colors">Predict</a>
+    </div>
+    <a href="#pipeline" class="bg-gradient-to-r from-secondary to-primary text-on-primary font-bold px-5 py-2 rounded-full text-sm hover:scale-[0.99] active:scale-[0.97] transition-transform cursor-pointer">
+      Get Started
+    </a>
+  </div>
+</nav>
+
+<main class="pt-20">
+
+<!-- ═══════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════ -->
+<section class="relative min-h-[795px] flex items-center px-6 overflow-hidden">
+  <div class="absolute inset-0 z-0">
+    <img class="w-full h-full object-cover opacity-40 mix-blend-luminosity" alt="Medical professional with holographic data interface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADiVeYknHqhOGdoiJHdKT08k3aCFplfXpCWS6nTeXFHVfTjRRFPByC95VLky94gV86hRx6XmPE4crTV6cRbSwRZPhTsHyEw1daXDz9XM7T6QAw6t5VMpMLfSwtaepVtP6nZ9h8cdSt1Tbxl5CpRLOSCf3JDLREvQ4kr-LlKXyEued7ncnu8k4qLegBaaBwgjQ_Z_N6xlxiOfwE_PY-J2p-Ryku8mvXlbk9CqqiFksVBJl_IxxN2X9jocv6mVbUa60ihiqYdfXScF4" />
+    <div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/50"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-background to-transparent"></div>
+  </div>
+  <div class="relative z-10 max-w-2xl">
+    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight mb-6 animate-fade-in-up">
+      Multi-Stage <span class="gradient-text">ML Pipeline</span> for Early Disease Prediction
+    </h1>
+    <p class="text-on-surface-variant text-lg mb-10 max-w-lg leading-relaxed animate-fade-in-up delay-200">
+      Deploy precision intelligence directly into clinical workflows. Our neural architecture synthesizes longitudinal patterns to anticipate risks before they manifest.
+    </p>
+    <div class="flex flex-wrap gap-4 animate-fade-in-up delay-400">
+      <a href="#pipeline" class="bg-gradient-to-r from-secondary to-primary text-on-primary font-bold px-8 py-4 rounded-full text-lg shadow-[0_0_30px_rgba(64,221,190,0.3)] hover:scale-[0.98] transition-transform cursor-pointer">
+        Deploy Pipeline
+      </a>
+      <a href="#overview" class="glass-panel ghost-border text-on-surface font-semibold px-8 py-4 rounded-full text-lg hover:bg-surface-container-highest transition-colors cursor-pointer">
+        View Data
+      </a>
+    </div>
+  </div>
+  <!-- Floating Data UI Element -->
+  <div class="hidden lg:block absolute right-12 top-1/4 w-80 glass-panel ghost-border p-6 rounded-xl shadow-2xl animate-fade-in-up delay-500">
+    <div class="flex justify-between items-center mb-4">
+      <span class="text-[10px] font-bold uppercase tracking-widest text-secondary">System Pulse</span>
+      <div class="h-2 w-2 rounded-full bg-secondary animate-pulse"></div>
+    </div>
+    <div class="space-y-4">
+      <div class="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
+        <div class="h-full bg-secondary w-3/4 shadow-[0_0_10px_#40ddbe]"></div>
+      </div>
+      <div class="flex justify-between text-xs font-mono text-on-surface-variant">
+        <span>PIPELINE STATUS</span>
+        <span class="text-secondary" id="hero-status">READY</span>
+      </div>
+      <div class="h-32 flex items-end gap-1">
+        <div class="w-full bg-primary/20 h-[20%] rounded-t-sm"></div>
+        <div class="w-full bg-primary/30 h-[45%] rounded-t-sm"></div>
+        <div class="w-full bg-secondary h-[80%] rounded-t-sm glow-path"></div>
+        <div class="w-full bg-primary/40 h-[60%] rounded-t-sm"></div>
+        <div class="w-full bg-primary/20 h-[30%] rounded-t-sm"></div>
+        <div class="w-full bg-primary/30 h-[50%] rounded-t-sm"></div>
+        <div class="w-full bg-secondary/60 h-[70%] rounded-t-sm"></div>
+        <div class="w-full bg-primary/20 h-[35%] rounded-t-sm"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     VALUE PROPOSITION / ARCHITECTURAL EDGE
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto">
+  <div class="mb-16">
+    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Precision Engineering</h2>
+    <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">The Architectural Edge</h3>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="glass-panel ghost-border p-8 rounded-xl flex flex-col gap-6 group hover:bg-surface-container-high transition-all animate-fade-in-up">
+      <div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">hub</span>
+      </div>
+      <div>
+        <h4 class="text-xl font-bold mb-3">Longitudinal Data Synthesis</h4>
+        <p class="text-on-surface-variant text-sm leading-relaxed">Harmonize fragmented health data into a cohesive chronological graph for deep temporal analysis.</p>
+      </div>
+    </div>
+    <div class="glass-panel border border-secondary/30 p-8 rounded-xl flex flex-col gap-6 relative overflow-hidden animate-fade-in-up delay-100">
+      <div class="absolute -right-10 -top-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl"></div>
+      <div class="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center shadow-[0_0_20px_rgba(64,221,190,0.4)]">
+        <span class="material-symbols-outlined text-on-secondary" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+      </div>
+      <div>
+        <h4 class="text-xl font-bold mb-3">Ensemble + Neural Stack</h4>
+        <p class="text-on-surface-variant text-sm leading-relaxed">Random Forest, XGBoost, Stacking ensembles & deep ANNs — compared and ranked automatically.</p>
+      </div>
+    </div>
+    <div class="glass-panel ghost-border p-8 rounded-xl flex flex-col gap-6 animate-fade-in-up delay-200">
+      <div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">psychology</span>
+      </div>
+      <div>
+        <h4 class="text-xl font-bold mb-3">Explainable AI</h4>
+        <p class="text-on-surface-variant text-sm leading-relaxed">Move beyond the black box. Get feature importance for every diagnostic prediction made.</p>
+      </div>
+    </div>
+    <div class="glass-panel ghost-border p-8 rounded-xl flex flex-col gap-6 animate-fade-in-up delay-300">
+      <div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-secondary">api</span>
+      </div>
+      <div>
+        <h4 class="text-xl font-bold mb-3">Live Prediction API</h4>
+        <p class="text-on-surface-variant text-sm leading-relaxed">Real-time REST endpoints for integrating risk predictions into any clinical workstation or app.</p>
+      </div>
+    </div>
+    <div class="md:col-span-2 glass-panel ghost-border p-8 rounded-xl flex flex-col md:flex-row gap-8 items-center animate-fade-in-up delay-400">
+      <div class="flex-1">
+        <div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-secondary">monitoring</span>
+        </div>
+        <h4 class="text-xl font-bold mb-3">Outlier Detection & Clustering</h4>
+        <p class="text-on-surface-variant text-sm leading-relaxed">IQR, Z-Score & Isolation Forest detect anomalies. K-Means and DBSCAN reveal hidden patient clusters.</p>
+      </div>
+      <div class="w-full md:w-1/2 h-32 glass-panel rounded-lg overflow-hidden flex items-center justify-center">
+        <img class="w-full h-full object-cover opacity-50" alt="Data streams visualization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1-dO-E1rRfajzcIOyUkTRGeLPV43g9Tjwy7etEyj_n5rL7eoblvRSYCCOzv5IZ6E5Jr3G54gxVguvD3eMtYAEbedSXTWCVR7veG4Y1hLWZdmNwKxfJeV_0GyadTEhDijaVJpQphmftXo800f3lyyg4xxLAJpqEBeRBUMTO5EWTX_moDo0j9_FgcviXsPjiECfW9_4xZCvEgSXNFoVNdb9RwqzJ589tcw5wvDyc0ix6hQfzKgZuYfhet6dEVXOkTw7d9CLw7Z1vkU" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     INTERACTIVE INSIGHTS
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 bg-surface-container-lowest relative overflow-hidden">
+  <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+    <div>
+      <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Patient Intelligence</h2>
+      <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-8">Intelligent Patient Stratification</h3>
+      <p class="text-on-surface-variant text-lg leading-relaxed mb-10">
+        Our stratified analytics engine isolates high-risk clusters within minutes. Visualize cohort movement across the risk spectrum with surgical precision.
+      </p>
+      <div class="space-y-6">
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs font-bold uppercase tracking-widest">
+            <span>High Risk Segment</span>
+            <span class="text-error">24% Increase</span>
+          </div>
+          <div class="h-2 w-full bg-surface-container-high rounded-full">
+            <div class="h-full bg-error w-[65%] rounded-full shadow-[0_0_12px_rgba(255,180,171,0.4)]"></div>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <div class="flex justify-between text-xs font-bold uppercase tracking-widest">
+            <span>Preventative Success Rate</span>
+            <span class="text-secondary">88%</span>
+          </div>
+          <div class="h-2 w-full bg-surface-container-high rounded-full">
+            <div class="h-full bg-secondary w-[88%] rounded-full shadow-[0_0_12px_rgba(64,221,190,0.4)]"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="relative">
+      <div class="glass-panel ghost-border rounded-2xl p-10 aspect-square flex items-center justify-center">
+        <div class="relative w-full h-full border-2 border-dashed border-outline-variant/30 rounded-full flex items-center justify-center" style="animation: spin20 20s linear infinite;">
+          <div class="absolute top-0 w-4 h-4 bg-secondary rounded-full shadow-[0_0_20px_#40ddbe]"></div>
+          <div class="absolute bottom-0 w-3 h-3 bg-primary rounded-full"></div>
+        </div>
+        <div class="absolute inset-0 flex items-center justify-center flex-col text-center">
+          <span class="text-6xl font-black text-white tracking-tighter" id="hero-confidence">98.2<span class="text-2xl text-secondary">%</span></span>
+          <span class="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant mt-2">Prediction Confidence</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════
+     STATS
+     ═══════════════════════════════════════════════════ -->
+<section class="py-32 px-6">
+  <div class="max-w-7xl mx-auto rounded-3xl bg-gradient-to-br from-primary-container to-surface-container-lowest p-12 md:p-24 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10 pointer-events-none">
+      <div class="grid grid-cols-12 h-full w-full">
+        <div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div><div class="border-r border-on-primary-container"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-16 relative z-10">
+      <div class="flex flex-col gap-4">
+        <span class="text-7xl md:text-8xl font-extrabold tracking-tighter text-white" id="stat-rows-hero">50</span>
+        <p class="text-xl font-bold text-secondary uppercase tracking-widest">Records Analyzed</p>
+        <p class="text-on-primary-container/80 max-w-xs">Multi-dimensional patient profiles with 16 clinical & lifestyle features.</p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <span class="text-7xl md:text-8xl font-extrabold tracking-tighter text-white">5</span>
+        <p class="text-xl font-bold text-secondary uppercase tracking-widest">Pipeline Stages</p>
+        <p class="text-on-primary-container/80 max-w-xs">Preprocessing → Outliers → Tuning → ANN → Final Evaluation.</p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <span class="text-7xl md:text-8xl font-extrabold tracking-tighter text-white">8+</span>
+        <p class="text-xl font-bold text-secondary uppercase tracking-widest">Models Trained</p>
+        <p class="text-on-primary-container/80 max-w-xs">RF, GB, XGBoost, Voting, Stacking, SimpleANN, DeepANN, MLP — auto-ranked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ═══════════════════════════════════════════════════════════════
+     DASHBOARD SECTIONS BEGIN
+     ═══════════════════════════════════════════════════════════════
+     ═══════════════════════════════════════════════════════════════ -->
+
+
+<!-- ═══════════════════════════════════════════════════
+     DATASET OVERVIEW
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto section-reveal" id="overview">
+  <div class="mb-12">
+    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Dataset</h2>
+    <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">Data Overview</h3>
+    <div class="w-16 h-[3px] bg-gradient-to-r from-secondary to-primary rounded-full mt-4"></div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="dash-card rounded-xl p-5">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-secondary text-xl">database</span>
+      </div>
+      <div class="text-2xl font-extrabold" id="stat-rows">—</div>
+      <div class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Records</div>
+    </div>
+    <div class="dash-card rounded-xl p-5">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-secondary text-xl">layers</span>
+      </div>
+      <div class="text-2xl font-extrabold" id="stat-features">—</div>
+      <div class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Features</div>
+    </div>
+    <div class="dash-card rounded-xl p-5">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-secondary text-xl">check_circle</span>
+      </div>
+      <div class="text-2xl font-extrabold" id="stat-missing">—</div>
+      <div class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Missing</div>
+    </div>
+    <div class="dash-card rounded-xl p-5">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-secondary text-xl">label</span>
+      </div>
+      <div class="text-2xl font-extrabold" id="stat-classes">—</div>
+      <div class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Risk Classes</div>
+    </div>
+  </div>
+
+  <!-- Data Preview + Target -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="dash-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">table_chart</span> Feature Statistics</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-secondary px-2 py-1 rounded-full bg-secondary/10">Numeric</span>
+      </div>
+      <div class="overflow-auto max-h-[320px] rounded-lg" id="data-preview-table">
+        <div class="flex items-center justify-center h-40 text-on-surface-variant text-sm"><span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Loading...</div>
+      </div>
+    </div>
+    <div class="dash-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <span class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">donut_large</span> Risk Distribution</span>
+        <span class="text-[10px] font-bold uppercase tracking-widest text-secondary px-2 py-1 rounded-full bg-secondary/10">Target</span>
+      </div>
+      <div class="chart-box" style="height: 280px;">
+        <canvas id="target-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Chips -->
+  <div class="dash-card rounded-xl p-6">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="material-symbols-outlined text-secondary text-lg">view_module</span>
+      <span class="text-sm font-bold">Dataset Features</span>
+    </div>
+    <div class="flex flex-wrap gap-2" id="feature-chips">
+      <span class="text-xs font-medium text-on-surface-variant bg-surface-container-high px-3 py-1.5 rounded-full">Loading...</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     EDA
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto bg-surface-container-lowest section-reveal" id="eda">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-12">
+      <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Exploratory Analysis</h2>
+      <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">Data Analysis</h3>
+      <div class="w-16 h-[3px] bg-gradient-to-r from-secondary to-primary rounded-full mt-4"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-8 p-1 bg-surface-container rounded-full w-fit" data-tab-group="eda">
+      <button class="tab-btn-dash active" data-tab="distributions" onclick="switchTab('eda','distributions')">
+        <i class="fas fa-chart-bar mr-1"></i> Distributions
+      </button>
+      <button class="tab-btn-dash" data-tab="correlation" onclick="switchTab('eda','correlation')">
+        <i class="fas fa-th mr-1"></i> Correlation
+      </button>
+      <button class="tab-btn-dash" data-tab="riskcomp" onclick="switchTab('eda','riskcomp')">
+        <i class="fas fa-balance-scale mr-1"></i> Risk Compare
+      </button>
+    </div>
+
+    <!-- Tab: Distributions -->
+    <div class="tab-content-dash active" data-tab-content-group="eda" data-tab-content="distributions">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="distribution-charts">
+        <div class="dash-card rounded-xl p-6 flex items-center justify-center h-40 text-on-surface-variant text-sm">
+          <span class="material-symbols-outlined animate-spin mr-2">progress_activity</span> Loading charts...
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Correlation -->
+    <div class="tab-content-dash" data-tab-content-group="eda" data-tab-content="correlation">
+      <div class="dash-card rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">grid_on</span> Correlation Heatmap</span>
+          <span class="text-[10px] font-bold uppercase tracking-widest text-secondary px-2 py-1 rounded-full bg-secondary/10">Pearson</span>
+        </div>
+        <div class="overflow-x-auto py-4">
+          <canvas id="correlation-chart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Risk Compare -->
+    <div class="tab-content-dash" data-tab-content-group="eda" data-tab-content="riskcomp">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="dash-card rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-secondary text-lg">bar_chart</span>
+            <span class="text-sm font-bold">Median Values by Risk Level</span>
+          </div>
+          <div class="chart-box" style="height: 320px;">
+            <canvas id="boxplot-chart"></canvas>
+          </div>
+        </div>
+        <div class="dash-card rounded-xl p-6">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-secondary text-lg">wc</span>
+            <span class="text-sm font-bold">Gender Distribution</span>
+          </div>
+          <div class="chart-box" style="height: 320px;">
+            <canvas id="gender-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PIPELINE
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto section-reveal" id="pipeline">
+  <div class="mb-12">
+    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Execution</h2>
+    <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">ML Pipeline</h3>
+    <div class="w-16 h-[3px] bg-gradient-to-r from-secondary to-primary rounded-full mt-4"></div>
+  </div>
+
+  <div class="dash-card rounded-2xl p-8 md:p-12">
+    <!-- Pipeline Flow -->
+    <div class="flex items-center justify-center gap-0 flex-wrap py-8">
+      <div class="pipeline-step flex flex-col items-center text-center min-w-[120px]" data-step="1">
+        <div class="pipeline-dot"><span class="material-symbols-outlined text-lg">cleaning_services</span></div>
+        <span class="text-[11px] font-bold text-on-surface-variant mt-3 max-w-[100px]">Preprocessing</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-step flex flex-col items-center text-center min-w-[120px]" data-step="2">
+        <div class="pipeline-dot"><span class="material-symbols-outlined text-lg">search</span></div>
+        <span class="text-[11px] font-bold text-on-surface-variant mt-3 max-w-[100px]">Outliers & Clusters</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-step flex flex-col items-center text-center min-w-[120px]" data-step="3">
+        <div class="pipeline-dot"><span class="material-symbols-outlined text-lg">tune</span></div>
+        <span class="text-[11px] font-bold text-on-surface-variant mt-3 max-w-[100px]">Tuning & Ensembles</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-step flex flex-col items-center text-center min-w-[120px]" data-step="4">
+        <div class="pipeline-dot"><span class="material-symbols-outlined text-lg">neurology</span></div>
+        <span class="text-[11px] font-bold text-on-surface-variant mt-3 max-w-[100px]">Neural Networks</span>
+      </div>
+      <div class="pipeline-connector"></div>
+      <div class="pipeline-step flex flex-col items-center text-center min-w-[120px]" data-step="5">
+        <div class="pipeline-dot"><span class="material-symbols-outlined text-lg">trophy</span></div>
+        <span class="text-[11px] font-bold text-on-surface-variant mt-3 max-w-[100px]">Best Model</span>
+      </div>
+    </div>
+
+    <div class="text-center pt-6">
+      <button id="btn-run-pipeline" onclick="runPipeline()" class="bg-gradient-to-r from-secondary to-primary text-on-primary font-bold px-10 py-4 rounded-full text-lg shadow-[0_0_30px_rgba(64,221,190,0.3)] hover:scale-[0.98] transition-transform">
+        <i class="fas fa-play mr-2"></i> Run Full Pipeline
+      </button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     MODEL RESULTS (hidden until pipeline runs)
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto" id="models" style="display: none;">
+  <div class="mb-12">
+    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Results</h2>
+    <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">Model Performance</h3>
+    <div class="w-16 h-[3px] bg-gradient-to-r from-secondary to-primary rounded-full mt-4"></div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Leaderboard Table -->
+    <div class="dash-card rounded-xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-secondary text-lg">leaderboard</span>
+        <span class="text-sm font-bold">Model Leaderboard</span>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant border-b border-outline-variant/20">
+            <th class="text-left py-3 px-3">Model</th>
+            <th class="text-left py-3 px-3">Accuracy</th>
+            <th class="text-left py-3 px-3">F1</th>
+          </tr>
+        </thead>
+        <tbody id="model-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- Accuracy Chart -->
+    <div class="dash-card rounded-xl p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <span class="material-symbols-outlined text-secondary text-lg">bar_chart</span>
+        <span class="text-sm font-bold">Accuracy Comparison</span>
+      </div>
+      <div class="chart-box" style="height: 320px;">
+        <canvas id="model-comparison-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Importance -->
+  <div class="dash-card rounded-xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-secondary text-lg">star</span> Feature Importance</span>
+      <span class="text-[10px] font-bold uppercase tracking-widest text-secondary px-2 py-1 rounded-full bg-secondary/10">Best Model</span>
+    </div>
+    <div class="chart-box" style="height: 350px;">
+      <canvas id="feature-importance-chart"></canvas>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     PREDICTION (hidden until pipeline runs)
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 max-w-7xl mx-auto" id="predict" style="display: none;">
+  <div class="mb-12">
+    <h2 class="text-sm font-bold uppercase tracking-[0.2em] text-secondary mb-4">Inference</h2>
+    <h3 class="text-4xl md:text-5xl font-extrabold tracking-tight">Risk <span class="gradient-text">Prediction</span></h3>
+    <div class="w-16 h-[3px] bg-gradient-to-r from-secondary to-primary rounded-full mt-4"></div>
+  </div>
+
+  <div class="dash-card rounded-2xl p-8 relative overflow-hidden">
+    <div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-secondary to-primary"></div>
+
+    <form id="predict-form" onsubmit="event.preventDefault(); submitPrediction();">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Age</label>
+          <input type="number" name="age" value="45" min="0" max="120" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Gender</label>
+          <select name="gender" class="form-input">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">BMI</label>
+          <input type="number" step="0.1" name="bmi" value="28.5" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">BP Systolic</label>
+          <input type="number" name="blood_pressure_systolic" value="140" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">BP Diastolic</label>
+          <input type="number" name="blood_pressure_diastolic" value="90" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Cholesterol</label>
+          <input type="number" name="cholesterol" value="230" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Blood Glucose</label>
+          <input type="number" name="blood_glucose" value="110" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Heart Rate</label>
+          <input type="number" name="heart_rate" value="78" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Smoking</label>
+          <select name="smoking" class="form-input">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Alcohol</label>
+          <select name="alcohol_consumption" class="form-input">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Physical Activity</label>
+          <input type="number" name="physical_activity" value="3" min="1" max="5" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Family History</label>
+          <select name="family_history" class="form-input">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Sleep Hours</label>
+          <input type="number" name="sleep_hours" value="7" min="0" max="24" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Stress Level</label>
+          <input type="number" name="stress_level" value="5" min="1" max="10" class="form-input" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Diet Quality</label>
+          <input type="number" name="diet_quality" value="5" min="1" max="10" class="form-input" />
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button type="submit" id="btn-predict" class="bg-gradient-to-r from-secondary to-primary text-on-primary font-bold px-8 py-3 rounded-full text-sm shadow-[0_0_20px_rgba(64,221,190,0.2)] hover:scale-[0.98] transition-transform">
+          <i class="fas fa-heartbeat mr-2"></i> Predict Risk
+        </button>
+        <span class="text-xs text-on-surface-variant">Uses the best-performing model from the pipeline</span>
+      </div>
+    </form>
+
+    <!-- Prediction Result -->
+    <div id="prediction-result" class="mt-8 p-6 rounded-xl bg-surface-container-lowest border border-outline-variant/20 hidden">
+      <div class="flex items-center gap-4 mb-6">
+        <i id="result-icon" class="fas fa-shield-alt text-3xl"></i>
+        <div>
+          <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant mb-1">Predicted Risk Level</div>
+          <div class="text-3xl font-black" id="result-level">—</div>
+        </div>
+      </div>
+      <div class="space-y-3" id="prob-bars"></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════
+     CTA
+     ═══════════════════════════════════════════════════ -->
+<section class="py-24 px-6 text-center max-w-4xl mx-auto">
+  <h2 class="text-4xl md:text-6xl font-extrabold tracking-tight mb-8">Ready to evolve your <span class="gradient-text">Clinical Stack?</span></h2>
+  <p class="text-on-surface-variant text-xl mb-12">Leverage ML-powered risk prediction for proactive medicine.</p>
+  <div class="flex justify-center">
+    <a href="#pipeline" class="bg-gradient-to-r from-secondary to-primary text-on-primary font-bold px-10 py-5 rounded-full text-xl shadow-lg hover:scale-105 transition-transform cursor-pointer" style="animation: pulseGlow 3s infinite ease-in-out;">
+      Run the Pipeline Now
+    </a>
+  </div>
+</section>
+</main>
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════════ -->
+<footer class="bg-[#0d1517] border-t border-teal-800/15 w-full py-12">
+  <div class="flex flex-col md:flex-row justify-between items-center w-full px-12 max-w-7xl mx-auto gap-6">
+    <div class="flex flex-col gap-2">
+      <span class="text-lg font-extrabold text-teal-400">HealthRisk AI</span>
+      <p class="text-teal-700 text-xs font-medium uppercase tracking-widest">© 2024 HealthRisk AI. Precision Clinical Intelligence.</p>
+    </div>
+    <div class="flex gap-8">
+      <a class="text-teal-700 font-medium uppercase tracking-widest text-xs hover:text-teal-400 transition-all opacity-80 hover:opacity-100" href="#overview">Data</a>
+      <a class="text-teal-700 font-medium uppercase tracking-widest text-xs hover:text-teal-400 transition-all opacity-80 hover:opacity-100" href="#eda">Analysis</a>
+      <a class="text-teal-700 font-medium uppercase tracking-widest text-xs hover:text-teal-400 transition-all opacity-80 hover:opacity-100" href="#pipeline">Pipeline</a>
+      <a class="text-teal-700 font-medium uppercase tracking-widest text-xs hover:text-teal-400 transition-all opacity-80 hover:opacity-100" href="#predict">Predict</a>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════
+     LOADING OVERLAY
+     ═══════════════════════════════════════════════════ -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="text-center">
+    <div class="loading-spinner mx-auto mb-6"></div>
+    <div class="text-lg font-bold mb-2" id="loading-text">Running Pipeline...</div>
+    <div class="text-sm text-on-surface-variant" id="loading-sub">Please wait</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     TOAST
+     ═══════════════════════════════════════════════════ -->
+<div class="toast-box" id="toast">
+  <i class="fas fa-check-circle text-secondary"></i>
+  <span class="toast-msg">Success</span>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════ -->
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>
