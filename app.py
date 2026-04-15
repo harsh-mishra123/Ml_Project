@@ -147,12 +147,10 @@ def run_pipeline():
     try:
         pipeline_status = {"step": 0, "total": 5, "message": "Starting...", "running": True}
         results = {}
-        time.sleep(0.5)
 
         # Step 1: Preprocessing
         pipeline_status["step"] = 1
         pipeline_status["message"] = "Preprocessing data..."
-        time.sleep(1)
         from importlib import import_module
         preprocessing = import_module("01_preprocessing")
         pipeline_artifacts = preprocessing.run_preprocessing(DATA_PATH)
@@ -165,7 +163,6 @@ def run_pipeline():
         # Step 2: Outlier Detection & Clustering
         pipeline_status["step"] = 2
         pipeline_status["message"] = "Detecting outliers & clustering..."
-        time.sleep(1)
         outlier_mod = import_module("02_outlier_clustering")
         pipeline_artifacts = outlier_mod.run_outlier_clustering(pipeline_artifacts)
         results["clustering"] = {
@@ -176,21 +173,18 @@ def run_pipeline():
         # Step 3: Tuning & Ensembles
         pipeline_status["step"] = 3
         pipeline_status["message"] = "Tuning models & building ensembles..."
-        time.sleep(1)
         tuning_mod = import_module("03_tuning_ensemble")
         pipeline_artifacts = tuning_mod.run_tuning_ensemble(pipeline_artifacts)
 
         # Step 4: ANN Models
         pipeline_status["step"] = 4
         pipeline_status["message"] = "Training neural networks..."
-        time.sleep(1.5)
         ann_mod = import_module("04_ann_models")
         pipeline_artifacts = ann_mod.run_ann_models(pipeline_artifacts)
 
         # Step 5: Final Evaluation
         pipeline_status["step"] = 5
         pipeline_status["message"] = "Final evaluation..."
-        time.sleep(1)
         final_mod = import_module("05_final_pipeline")
         pipeline_artifacts = final_mod.run_final_pipeline(pipeline_artifacts)
 

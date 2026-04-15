@@ -149,10 +149,10 @@ def train_sklearn_mlp(X_train, y_train, X_test, y_test) -> dict:
     """Train an sklearn MLPClassifier as baseline."""
     print("\n--- sklearn MLPClassifier ---")
     mlp = MLPClassifier(
-        hidden_layer_sizes=(64, 32),
+        hidden_layer_sizes=(10,),
         activation="relu",
         solver="adam",
-        max_iter=500,
+        max_iter=200,
         early_stopping=True,
         validation_fraction=0.15,
         random_state=42,
