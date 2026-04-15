@@ -15,7 +15,6 @@ seaborn>=0.12.0
 xgboost>=2.0.0
 
 # Deep Learning (optional — sklearn MLP used as fallback)
-tensorflow>=2.14.0
 
 # Web Framework & Server
 flask>=3.0.0
